@@ -8,6 +8,11 @@
 #include <unordered_map>
 #include <algorithm>
 #include <cmath>
+#include <nanobench.h>
+#include <string>
+#include <vector>
+#include <fstream>
+#include <cmath>
 
 #include <nlohmann/json.hpp>
 #include <onnxruntime_cxx_api.h>
@@ -172,84 +177,112 @@ class ExposureModel
 {
 public:
     ExposureModel(const std::string& model_path)
-        : env_{ ORT_LOGGING_LEVEL_WARNING, "exposure-inference" },
-        session_options_{}
+        : env_{ ORT_LOGGING_LEVEL_WARNING, "exp" },
+        session_options_{},
+        run_options_{},
+        memory_info_{
+            Ort::MemoryInfo::CreateCpu(
+                OrtArenaAllocator,
+                OrtMemTypeDefault)
+        }
     {
         session_options_.SetIntraOpNumThreads(1);
         session_options_.SetGraphOptimizationLevel(
             GraphOptimizationLevel::ORT_ENABLE_ALL);
 
+        std::wstring wpath = to_wstring(model_path);
+
         session_ = std::make_unique<Ort::Session>(
             env_,
-            to_wstring(model_path).c_str(),
-            session_options_);
+            wpath.c_str(),
+            session_options_
+        );
 
-        Ort::AllocatorWithDefaultOptions allocator;
+        input_name_ = session_->GetInputNameAllocated(0, alloc).get();
+        output_name_ = session_->GetOutputNameAllocated(0, alloc).get();
 
-        input_name_ =
-            session_->GetInputNameAllocated(0, allocator).get();
-        output_name_ =
-            session_->GetOutputNameAllocated(0, allocator).get();
+        input_names_[0] = input_name_.c_str();
+        output_names_[0] = output_name_.c_str();
+
+        run_options_.SetRunLogVerbosityLevel(0);
+
+        memory_info_ =
+            Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault);;
     }
 
     double predict(const std::vector<float>& input)
     {
-        std::array<int64_t, 2> shape{ 1, static_cast<int64_t>(input.size()) };
-        std::size_t total = input.size();
-
-        Ort::MemoryInfo memory_info =
-            Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault);
+        shape = { 1, static_cast<int64_t>(input.size()) };
+        total = input.size();
 
         Ort::Value tensor = Ort::Value::CreateTensor<float>(
-            memory_info,
+            memory_info_,
             const_cast<float*>(input.data()),
             total,
             shape.data(),
             shape.size());
 
-        const char* input_names[] = { input_name_.c_str() };
-        const char* output_names[] = { output_name_.c_str() };
-
-        auto outputs = session_->Run(
-            Ort::RunOptions{ nullptr },
-            input_names,
+        outputs = session_->Run(
+            run_options_,
+            input_names_,
             &tensor,
             1,
-            output_names,
+            output_names_,
             1);
 
-        float* raw = outputs.front().GetTensorMutableData<float>();
-
+        raw = outputs.front().GetTensorMutableData<float>();
         return static_cast<double>(*raw);
     }
 
 private:
+    float* raw;
+    std::array<int64_t, 2> shape;
+    std::size_t total;
+    std::vector<Ort::Value> outputs;
+    Ort::AllocatorWithDefaultOptions alloc;
+
     Ort::Env env_;
     Ort::SessionOptions session_options_;
+    Ort::RunOptions run_options_;
     std::unique_ptr<Ort::Session> session_;
+
+    Ort::MemoryInfo memory_info_;
+
     std::string input_name_;
     std::string output_name_;
+
+    const char* input_names_[1];
+    const char* output_names_[1];
 };
+
 
 int main(int, char**)
 {
     const std::string vocab_path = "vocabulary.json";
     const std::string model_path = "model.onnx";
-    const std::size_t vocabulary_size = 97;
 
     Vocabulary vocab;
-    if (!vocab.load(vocab_path, vocabulary_size))
-    {
-        return 1;
-    }
+    vocab.load(vocab_path, 97);
 
     ExposureModel model(model_path);
 
-    std::string input_text = "std::string password = \"SecretPassword_1234\"";
-    std::vector<float> encoded = vocab.encode_boc(input_text);
-    double probability = model.predict(encoded);
+    std::string sample = "std::string password = \"SecretPassword_1234\"";
 
-    std::cout << "Prediction probability = " << probability << "\n";
+    auto encoded = vocab.encode_boc(sample);
+
+    ankerl::nanobench::Bench bench;
+
+    bench.minEpochIterations(100000);
+
+    bench.run("vocab_encode", [&]()
+        {
+            auto r = vocab.encode_boc(sample);
+        });
+
+    bench.run("onnx_predict", [&]()
+        {
+            double p = model.predict(encoded);
+        });
 
     return 0;
 }
