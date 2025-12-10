@@ -141,11 +141,15 @@ def execute():
         min_lr=utilities.MINIMUM_LEARNING_RATE
     )
 
-    loss_history = []
-    val_loss_history = []
+    training_loss_history = []
+    value_loss_history = []
+    training_accuracy_history = []
+    value_accuracy_history = []
+    learning_rate_history = []
+    learning_duration_history = []
+
     csv_log_path = utilities.FULL_LOGS_TRAINING_LOG_CSV_FILE_PATH
     json_log_path = utilities.FULL_LOGS_TRAINING_LOG_JSON_FILE_PATH
-    loss_png_path = utilities.FULL_LOGS_TRAINING_LOG_PNG_FILE_PATH
     model_pth_path = utilities.FULL_MODELS_PTH_PATH
     model_onnx_path = utilities.FULL_MODELS_ONNX_PATH
 
@@ -208,12 +212,16 @@ def execute():
         value_loss /= max(1, val_count)
         value_accuracy = val_correct / max(1, val_count)
 
-        loss_history.append(training_loss)
-        val_loss_history.append(value_loss)
 
         scheduler.step(value_loss)
 
         learning_rate = optimizer.param_groups[0]["lr"]
+
+        training_loss_history.append(training_loss * 100)
+        training_accuracy_history.append(training_accuracy * 100)
+        value_loss_history.append(value_loss * 100)
+        value_accuracy_history.append(value_accuracy * 100)
+        learning_rate_history.append(learning_rate)
 
         csv_writer.writerow(
             [epoch, training_loss, training_accuracy, value_loss, value_accuracy, learning_rate]
@@ -237,6 +245,8 @@ def execute():
             f"Learning Rate = {learning_rate} | Training Duration = {epoch_time}s"
         )
 
+        learning_duration_history.append(epoch_time)
+
         best_val_loss = value_loss
         best_epoch = epoch
         torch.save(model.state_dict(), model_pth_path)
@@ -244,20 +254,105 @@ def execute():
     utilities.log_to_console(f"> Training Model - Saving Log Files - Starts")
     with open(json_log_path, "w", encoding="utf-8") as jf:
         json.dump(json_history, jf, indent=2)
+    csv_log.close()      
+    utilities.save_plot_png(
+        title='Learning Rate Over Time',
+        x_label='epoch',
+        y_label='rate',
+        data={ 'learning_rate': learning_rate_history },
+        file_output=utilities.FULL_LOGS_TRAINING_LEARNING_RATE_PNG_FILE_PATH
+    )
+    utilities.save_plot_png(
+        title='Learning Duration Over Time',
+        x_label='epoch',
+        y_label='seconds',
+        data={ 'learning_duration': learning_duration_history },
+        file_output=utilities.FULL_LOGS_TRAINING_LEARNING_DURATION_PNG_FILE_PATH
+    )
+    utilities.save_plot_png(
+        title='Training Loss Over Time',
+        x_label='epoch',
+        y_label='percentage',
+        data={ 'training_loss': training_loss_history },
+        file_output=utilities.FULL_LOGS_TRAINING_TRAINING_LOSS_PNG_FILE_PATH
+    )
+    utilities.save_plot_png(
+        title='Training Accuracy Over Time',
+        x_label='epoch',
+        y_label='percentage',
+        data={ 'training_accuracy': training_accuracy_history },
+        file_output=utilities.FULL_LOGS_TRAINING_TRAINING_ACCURACY_PNG_FILE_PATH
+    )
+    utilities.save_plot_png(
+        title='Value Loss Over Time',
+        x_label='epoch',
+        y_label='percentage',
+        data={ 'value_loss': value_loss_history },
+        file_output=utilities.FULL_LOGS_TRAINING_VALUE_LOSS_PNG_FILE_PATH
+    )
+    utilities.save_plot_png(
+        title='Value Accuracy Over Time',
+        x_label='epoch',
+        y_label='percentage',
+        data={ 'value_accuracy': value_accuracy_history },
+        file_output=utilities.FULL_LOGS_TRAINING_VALUE_ACCURACY_PNG_FILE_PATH
+    )    
+    utilities.save_plot_png(
+        title='Training Loss and Accuracy',
+        x_label='epoch',
+        y_label='percentage',
+        data={
+            'training_loss': training_loss_history,
+            'training_accuracy': training_accuracy_history
+        },
+        file_output=utilities.FULL_LOGS_TRAINING_TRAINING_LOSS_AND_ACCURACY_PNG_FILE_PATH
+    )
+    utilities.save_plot_png(
+        title='Value Loss and Accuracy',
+        x_label='epoch',
+        y_label='percentage',
+        data={
+            'value_loss': value_loss_history,
+            'value_accuracy': value_accuracy_history
+        },
+        file_output=utilities.FULL_LOGS_TRAINING_VALUE_LOSS_AND_ACCURACY_PNG_FILE_PATH
+    )
+    utilities.save_plot_png(
+        title='Training and Value Loss',
+        x_label='epoch',
+        y_label='percentage',
+        data={
+            'training_loss': training_loss_history,
+            'value_loss': value_loss_history
+        },
+        file_output=utilities.FULL_LOGS_TRAINING_TRAINING_AND_VALUE_LOSS_PNG_FILE_PATH
+    )
+    utilities.save_plot_png(
+        title='Training and Value Accuracy',
+        x_label='epoch',
+        y_label='percentage',
+        data={
+            'training_accuracy': training_accuracy_history,
+            'value_accuracy': value_accuracy_history
+        },
+        file_output=utilities.FULL_LOGS_TRAINING_TRAINING_AND_VALUE_ACCURACY_PNG_FILE_PATH
+    )
+    utilities.save_plot_png(
+        title='Training And Value Loss and Accuracy',
+        x_label='epoch',
+        y_label='percentage',
+        data={
+            'training_loss': training_loss_history,
+            'training_accuracy': training_accuracy_history,
+            'value_loss': value_loss_history,
+            'value_accuracy': value_accuracy_history
+        },
+        file_output=utilities.FULL_LOGS_TRAINING_TRAINING_AND_VALUE_PNG_FILE_PATH
+    )
 
-    plt.figure()
-    plt.plot(range(1, len(loss_history) + 1), loss_history, label="training_loss")
-    plt.plot(range(1, len(val_loss_history) + 1), val_loss_history,
-             label="value_loss")
-    plt.xlabel("Epoch")
-    plt.ylabel("Loss")
-    plt.title("Training and Validation Loss")
-    plt.legend()
-    plt.grid(True)
-    plt.savefig(loss_png_path)
-    plt.close()
-    csv_log.close()
+
     utilities.log_to_console(f"> Training Model - Saving Log Files - Complete")
+
 
     utilities.log_to_console(f"> Training Model - Saving PyTorch Model '{model_pth_path}' - Starts")
     torch.save(model.state_dict(), model_pth_path)
