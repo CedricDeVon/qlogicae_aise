@@ -11,7 +11,7 @@
 
 <div style="text-align: center;">
   <h1>Aise</h1>
-  <p style="font-style: italic;">Chess Piece Movement Simulator Via Neural Networks</p>
+  <p style="font-style: italic;">AI-Based Secrets Evaluator</p>
 <div style="margin: 32px 64px;">
     
 ![Version](https://img.shields.io/badge/Version-1.0.0-blue)
