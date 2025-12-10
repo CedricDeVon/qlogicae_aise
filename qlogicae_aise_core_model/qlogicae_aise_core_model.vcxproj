@@ -195,6 +195,16 @@
   <ItemGroup>
     <MASM Include="qlogicae_aise_core_model\assembly\x64_masm__main.asm" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="main.py" />
+    <None Include="qlogicae_aise_core_model\sources\datasets.py" />
+    <None Include="qlogicae_aise_core_model\sources\prepare_datasets.py" />
+    <None Include="qlogicae_aise_core_model\sources\test_model.py" />
+    <None Include="qlogicae_aise_core_model\sources\train_model.py" />
+    <None Include="qlogicae_aise_core_model\sources\utilities.py" />
+    <None Include="qlogicae_aise_core_model\sources\__init__.py" />
+    <None Include="qlogicae_aise_core_model\__init__.py" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.targets" />
