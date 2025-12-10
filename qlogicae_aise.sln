@@ -1,0 +1,92 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36127.28
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "qlogicae_aise_core_sandbox", "qlogicae_aise_core_sandbox\qlogicae_aise_core_sandbox.vcxproj", "{C6513BD3-2854-4608-BE61-3F6812C83DAF}"
+	ProjectSection(ProjectDependencies) = postProject
+		{07F44EB2-776B-4BB0-B462-589523A3D3F3} = {07F44EB2-776B-4BB0-B462-589523A3D3F3}
+		{7E893352-0E8D-4540-AD82-A19B571924FC} = {7E893352-0E8D-4540-AD82-A19B571924FC}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "qlogicae_core", "..\qlogicae_core\qlogicae_core\qlogicae_core.vcxproj", "{07F44EB2-776B-4BB0-B462-589523A3D3F3}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "qlogicae_core_test", "..\qlogicae_core\qlogicae_core_test\qlogicae_core_test.vcxproj", "{1122FCE4-3447-4777-A3EB-D0509714A64C}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "qlogicae", "qlogicae\qlogicae.vcxproj", "{8D1895F4-1A67-4305-BE94-C8EB161F01F8}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "qlogicae_aise_core", "qlogicae_aise_core\qlogicae_aise_core.vcxproj", "{7E893352-0E8D-4540-AD82-A19B571924FC}"
+	ProjectSection(ProjectDependencies) = postProject
+		{07F44EB2-776B-4BB0-B462-589523A3D3F3} = {07F44EB2-776B-4BB0-B462-589523A3D3F3}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "qlogicae_aise_core_benchmark", "qlogicae_aise_core_benchmark\qlogicae_aise_core_benchmark.vcxproj", "{726314A9-4EBE-490F-92B9-6A92A3AB077B}"
+	ProjectSection(ProjectDependencies) = postProject
+		{07F44EB2-776B-4BB0-B462-589523A3D3F3} = {07F44EB2-776B-4BB0-B462-589523A3D3F3}
+		{7E893352-0E8D-4540-AD82-A19B571924FC} = {7E893352-0E8D-4540-AD82-A19B571924FC}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "qlogicae_aise_core_model", "qlogicae_aise_core_model\qlogicae_aise_core_model.vcxproj", "{44957EBA-67D0-4885-9CF6-F03235E2205F}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "qlogicae_aise_core_test", "qlogicae_aise_core_test\qlogicae_aise_core_test.vcxproj", "{DD52DE90-B864-4D5B-85F2-97273227970E}"
+	ProjectSection(ProjectDependencies) = postProject
+		{07F44EB2-776B-4BB0-B462-589523A3D3F3} = {07F44EB2-776B-4BB0-B462-589523A3D3F3}
+		{7E893352-0E8D-4540-AD82-A19B571924FC} = {7E893352-0E8D-4540-AD82-A19B571924FC}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "qlogicae_aise_console", "qlogicae_aise_console\qlogicae_aise_console.vcxproj", "{B1F8C58F-DE64-4820-A8CE-06E1E759C5B2}"
+	ProjectSection(ProjectDependencies) = postProject
+		{07F44EB2-776B-4BB0-B462-589523A3D3F3} = {07F44EB2-776B-4BB0-B462-589523A3D3F3}
+		{7E893352-0E8D-4540-AD82-A19B571924FC} = {7E893352-0E8D-4540-AD82-A19B571924FC}
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C6513BD3-2854-4608-BE61-3F6812C83DAF}.Debug|x64.ActiveCfg = Debug|x64
+		{C6513BD3-2854-4608-BE61-3F6812C83DAF}.Debug|x64.Build.0 = Debug|x64
+		{C6513BD3-2854-4608-BE61-3F6812C83DAF}.Release|x64.ActiveCfg = Release|x64
+		{C6513BD3-2854-4608-BE61-3F6812C83DAF}.Release|x64.Build.0 = Release|x64
+		{07F44EB2-776B-4BB0-B462-589523A3D3F3}.Debug|x64.ActiveCfg = Debug|x64
+		{07F44EB2-776B-4BB0-B462-589523A3D3F3}.Debug|x64.Build.0 = Debug|x64
+		{07F44EB2-776B-4BB0-B462-589523A3D3F3}.Release|x64.ActiveCfg = Release|x64
+		{07F44EB2-776B-4BB0-B462-589523A3D3F3}.Release|x64.Build.0 = Release|x64
+		{1122FCE4-3447-4777-A3EB-D0509714A64C}.Debug|x64.ActiveCfg = Debug|x64
+		{1122FCE4-3447-4777-A3EB-D0509714A64C}.Debug|x64.Build.0 = Debug|x64
+		{1122FCE4-3447-4777-A3EB-D0509714A64C}.Release|x64.ActiveCfg = Release|x64
+		{1122FCE4-3447-4777-A3EB-D0509714A64C}.Release|x64.Build.0 = Release|x64
+		{8D1895F4-1A67-4305-BE94-C8EB161F01F8}.Debug|x64.ActiveCfg = Debug|x64
+		{8D1895F4-1A67-4305-BE94-C8EB161F01F8}.Debug|x64.Build.0 = Debug|x64
+		{8D1895F4-1A67-4305-BE94-C8EB161F01F8}.Release|x64.ActiveCfg = Release|x64
+		{8D1895F4-1A67-4305-BE94-C8EB161F01F8}.Release|x64.Build.0 = Release|x64
+		{7E893352-0E8D-4540-AD82-A19B571924FC}.Debug|x64.ActiveCfg = Debug|x64
+		{7E893352-0E8D-4540-AD82-A19B571924FC}.Debug|x64.Build.0 = Debug|x64
+		{7E893352-0E8D-4540-AD82-A19B571924FC}.Release|x64.ActiveCfg = Release|x64
+		{7E893352-0E8D-4540-AD82-A19B571924FC}.Release|x64.Build.0 = Release|x64
+		{726314A9-4EBE-490F-92B9-6A92A3AB077B}.Debug|x64.ActiveCfg = Debug|x64
+		{726314A9-4EBE-490F-92B9-6A92A3AB077B}.Debug|x64.Build.0 = Debug|x64
+		{726314A9-4EBE-490F-92B9-6A92A3AB077B}.Release|x64.ActiveCfg = Release|x64
+		{726314A9-4EBE-490F-92B9-6A92A3AB077B}.Release|x64.Build.0 = Release|x64
+		{44957EBA-67D0-4885-9CF6-F03235E2205F}.Debug|x64.ActiveCfg = Debug|x64
+		{44957EBA-67D0-4885-9CF6-F03235E2205F}.Debug|x64.Build.0 = Debug|x64
+		{44957EBA-67D0-4885-9CF6-F03235E2205F}.Release|x64.ActiveCfg = Release|x64
+		{44957EBA-67D0-4885-9CF6-F03235E2205F}.Release|x64.Build.0 = Release|x64
+		{DD52DE90-B864-4D5B-85F2-97273227970E}.Debug|x64.ActiveCfg = Debug|x64
+		{DD52DE90-B864-4D5B-85F2-97273227970E}.Debug|x64.Build.0 = Debug|x64
+		{DD52DE90-B864-4D5B-85F2-97273227970E}.Release|x64.ActiveCfg = Release|x64
+		{DD52DE90-B864-4D5B-85F2-97273227970E}.Release|x64.Build.0 = Release|x64
+		{B1F8C58F-DE64-4820-A8CE-06E1E759C5B2}.Debug|x64.ActiveCfg = Debug|x64
+		{B1F8C58F-DE64-4820-A8CE-06E1E759C5B2}.Debug|x64.Build.0 = Debug|x64
+		{B1F8C58F-DE64-4820-A8CE-06E1E759C5B2}.Release|x64.ActiveCfg = Release|x64
+		{B1F8C58F-DE64-4820-A8CE-06E1E759C5B2}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {7F540BC7-91AC-437D-BD84-B843FA0F0475}
+	EndGlobalSection
+EndGlobal

@@ -1,5 +1,0 @@
-<RCC>
-    <qresource prefix="/qlogicae">
-        <file>qlogicae/application/assets/application.ico</file>
-    </qresource>
-</RCC>
