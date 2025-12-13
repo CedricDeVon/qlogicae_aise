@@ -15,46 +15,61 @@ int main(int, char**)
     mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
     SetConsoleMode(handle, mode);
 
-    handle = GetStdHandle(STD_OUTPUT_HANDLE);
+    CONSOLE_CURSOR_INFO cursor_info;
+    GetConsoleCursorInfo(handle, &cursor_info);
+    cursor_info.bVisible = FALSE;
+    SetConsoleCursorInfo(handle, &cursor_info);
 
-    CONSOLE_CURSOR_INFO info;
-    GetConsoleCursorInfo(handle, &info);
+    using namespace indicators;
 
-    info.bVisible = FALSE;
-    SetConsoleCursorInfo(handle, &info);
-
-    indicators::ProgressSpinner spinner{
-      option::PostfixText{"Checking credentials"},
-      option::ForegroundColor{Color::yellow},
-      option::SpinnerStates{std::vector<std::string>{"⠈", "⠐", "⠠", "⢀", "⡀", "⠄", "⠂", "⠁"}},
-      option::FontStyles{std::vector<FontStyle>{FontStyle::bold}}
+    ProgressSpinner spinner{
+        option::PostfixText{"Testing | 0 - 0 - 0"},
+        option::ForegroundColor{Color::yellow},
+        option::SpinnerStates{
+            std::vector<std::string>{"⠈","⠐","⠠","⢀","⡀","⠄","⠂","⠁"}
+        },
+        option::FontStyles{
+            std::vector<FontStyle>{FontStyle::bold}
+        }
     };
 
-    auto job = [&spinner]() {
-        while (true) {
-            if (spinner.is_completed()) {
-                spinner.set_option(option::ForegroundColor{ Color::green });
-                spinner.set_option(option::PrefixText{ "✔" });
-                spinner.set_option(option::ShowSpinner{ false });
-                spinner.set_option(option::ShowPercentage{ false });
-                spinner.set_option(option::PostfixText{ "Authenticated!" });
-                spinner.mark_as_completed();
+    const int total_count = 100;
+    std::atomic<int> success_count{ 0 };
+    std::atomic<int> failed_count{ 0 };
 
-                HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
+    auto job = [&spinner, &success_count, &failed_count, total_count]()
+        {
+            for (int i = 1; i <= total_count; ++i)
+            {
+                if (i % 5 == 0)
+                    failed_count++;
+                else
+                    success_count++;
 
-                CONSOLE_CURSOR_INFO info;
-                GetConsoleCursorInfo(handle, &info);
+                spinner.set_option(option::PostfixText{
+                    "Testing | " + std::to_string(i) + " - " +
+                    std::to_string(success_count.load()) + " - " +
+                    std::to_string(failed_count.load())
+                    });
 
-                info.bVisible = TRUE;
-                SetConsoleCursorInfo(handle, &info);
-
-                break;
-            }
-            else
                 spinner.tick();
-            std::this_thread::sleep_for(std::chrono::milliseconds(160));
-        }
+                std::this_thread::sleep_for(std::chrono::milliseconds(50));
+            }
+
+            spinner.set_option(option::ForegroundColor{ Color::green });
+            spinner.set_option(option::PrefixText{ "✔" });
+            spinner.set_option(option::ShowSpinner{ false });
+            spinner.set_option(option::ShowPercentage{ false });
+            spinner.set_option(option::PostfixText{ "Completed!" });
+            spinner.mark_as_completed();
+
+            HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
+            CONSOLE_CURSOR_INFO info;
+            GetConsoleCursorInfo(handle, &info);
+            info.bVisible = TRUE;
+            SetConsoleCursorInfo(handle, &info);
         };
+
     std::thread thread(job);
     thread.join();
 

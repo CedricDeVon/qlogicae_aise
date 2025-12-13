@@ -1,6 +1,8 @@
 #pragma once
 
+#include <indicators/cursor_control.hpp>
 #include <indicators/progress_spinner.hpp>
+#include <indicators/block_progress_bar.hpp>
 
 #include <any>
 #include <compare>
