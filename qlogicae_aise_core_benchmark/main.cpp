@@ -2,73 +2,283 @@
 
 #include "main.hpp"
 
-void bubble_sort(std::vector<int> data)
+#include <fstream>
+#include <vector>
+#include <string>
+#include <unordered_map>
+#include <algorithm>
+#include <cmath>
+#include <nanobench.h>
+
+#include <nlohmann/json.hpp>
+#include <onnxruntime_cxx_api.h>
+
+static std::wstring to_wstring(const std::string& s)
 {
-    bool is_swapped = true;
-    size_t index, size = data.size();
-    while (is_swapped)
+    std::wstring w;
+    w.reserve(s.size());
+    for (unsigned char c : s)
     {
-        is_swapped = false;
-        for (index = 1; index < size; ++index)
-        {
-            if (data[index - 1] > data[index])
-            {
-                std::swap(data[index - 1], data[index]);
-                is_swapped = true;
-            }
-        }
-        --size;
+        w.push_back(static_cast<wchar_t>(c));
     }
+    return w;
 }
 
-void selection_sort(std::vector<int> data)
+class Vocabulary
 {
-    size_t index_a, index_b, minimum_index, size = data.size();
-    for (index_a = 0; index_a < size; ++index_a)
+public:
+    Vocabulary()
     {
-        minimum_index = index_a;
-        for (index_b = index_a + 1; index_b < size; ++index_b)
+        for (int i = 0; i < 256; ++i)
         {
-            if (data[index_b] < data[minimum_index])
+            lut_[i] = -1;
+        }
+    }
+
+    bool load(const std::string& vocab_path, const std::size_t vocabulary_size)
+    {
+        std::ifstream f(vocab_path);
+        if (!f.is_open())
+        {
+            return false;
+        }
+
+        nlohmann::json j;
+        f >> j;
+
+        std::unordered_map<std::string, int> tmp;
+        tmp.reserve(vocabulary_size);
+
+        if (j.is_object())
+        {
+            for (auto& kv : j.items())
             {
-                minimum_index = index_b;
+                tmp.emplace(kv.key(), kv.value().get<int>());
             }
         }
-        std::swap(data[index_a], data[minimum_index]);
+        else if (j.is_array())
+        {
+            for (std::size_t i = 0; i < j.size(); ++i)
+            {
+                tmp.emplace(j[i].get<std::string>(), static_cast<int>(i));
+            }
+        }
+        else
+        {
+            return false;
+        }
+
+        if (tmp.size() != vocabulary_size)
+        {
+            return false;
+        }
+
+        for (int i = 0; i < 256; ++i)
+        {
+            lut_[i] = -1;
+        }
+
+        unk_idx_ = -1;
+
+        for (auto& kv : tmp)
+        {
+            const std::string& k = kv.first;
+            int idx = kv.second;
+
+            if (k.size() == 1)
+            {
+                lut_[static_cast<unsigned char>(k[0])] = idx;
+            }
+
+            if (k == "<UNK>" || k == "<unk>")
+            {
+                unk_idx_ = idx;
+            }
+        }
+
+        vocabulary_size_ = vocabulary_size;
+        return true;
     }
-}
 
-int main(int argc, char** argv)
-{   
-    QLogicaeCore::CLI_IO.print_with_new_line("QLogicaeAiseCoreBenchmark - Confirmed!");
+    std::vector<float> encode_boc(const std::string& text) const
+    {
+        std::vector<float> v(vocabulary_size_, 0.0f);
 
-    std::mt19937 rng(42);
+        const int unk = unk_idx_;
+        const int* lut = lut_;
+
+        const unsigned char* p = reinterpret_cast<const unsigned char*>(text.data());
+        const unsigned char* e = p + text.size();
+
+        while (p + 4 <= e)
+        {
+            int i0 = lut[p[0]];
+            int i1 = lut[p[1]];
+            int i2 = lut[p[2]];
+            int i3 = lut[p[3]];
+
+            if (i0 >= 0) v[i0] += 1.0f; else if (unk >= 0) v[unk] += 1.0f;
+            if (i1 >= 0) v[i1] += 1.0f; else if (unk >= 0) v[unk] += 1.0f;
+            if (i2 >= 0) v[i2] += 1.0f; else if (unk >= 0) v[unk] += 1.0f;
+            if (i3 >= 0) v[i3] += 1.0f; else if (unk >= 0) v[unk] += 1.0f;
+
+            p += 4;
+        }
+
+        while (p < e)
+        {
+            int idx = lut[*p];
+            if (idx >= 0) v[idx] += 1.0f;
+            else if (unk >= 0) v[unk] += 1.0f;
+            ++p;
+        }
+
+        float sum = 0.0f;
+
+        for (std::size_t i = 0; i < v.size(); i += 4)
+        {
+            float a = v[i];
+            float b = (i + 1 < v.size()) ? v[i + 1] : 0.0f;
+            float c = (i + 2 < v.size()) ? v[i + 2] : 0.0f;
+            float d = (i + 3 < v.size()) ? v[i + 3] : 0.0f;
+
+            sum += a * a + b * b + c * c + d * d;
+        }
+
+        float inv = (sum > 0.0f) ? 1.0f / std::sqrt(sum) : 0.0f;
+
+        if (inv != 0.0f)
+        {
+            for (float& x : v)
+            {
+                x *= inv;
+            }
+        }
+
+        return v;
+    }
+
+    std::size_t size() const
+    {
+        return vocabulary_size_;
+    }
+
+private:
+    int lut_[256];
+    int unk_idx_{ -1 };
+    std::size_t vocabulary_size_{ 0 };
+};
+
+class ExposureModel
+{
+public:
+    ExposureModel(const std::string& model_path)
+        : env_{ ORT_LOGGING_LEVEL_WARNING, "exp" },
+        session_options_{},
+        run_options_{},
+        memory_info_{
+            Ort::MemoryInfo::CreateCpu(
+                OrtArenaAllocator,
+                OrtMemTypeDefault)
+        }
+    {
+        session_options_.SetIntraOpNumThreads(1);
+        session_options_.SetGraphOptimizationLevel(
+            GraphOptimizationLevel::ORT_ENABLE_ALL);
+
+        std::wstring wpath = to_wstring(model_path);
+
+        session_ = std::make_unique<Ort::Session>(
+            env_,
+            wpath.c_str(),
+            session_options_
+        );
+
+        input_name_ = session_->GetInputNameAllocated(0, alloc).get();
+        output_name_ = session_->GetOutputNameAllocated(0, alloc).get();
+
+        input_names_[0] = input_name_.c_str();
+        output_names_[0] = output_name_.c_str();
+
+        run_options_.SetRunLogVerbosityLevel(0);
+
+        memory_info_ =
+            Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault);;
+    }
+
+    double predict(const std::vector<float>& input)
+    {
+        shape = { 1, static_cast<int64_t>(input.size()) };
+        total = input.size();
+
+        Ort::Value tensor = Ort::Value::CreateTensor<float>(
+            memory_info_,
+            const_cast<float*>(input.data()),
+            total,
+            shape.data(),
+            shape.size());
+
+        outputs = session_->Run(
+            run_options_,
+            input_names_,
+            &tensor,
+            1,
+            output_names_,
+            1);
+
+        raw = outputs.front().GetTensorMutableData<float>();
+        return static_cast<double>(*raw);
+    }
+
+private:
+    float* raw;
+    std::array<int64_t, 2> shape;
+    std::size_t total;
+    std::vector<Ort::Value> outputs;
+    Ort::AllocatorWithDefaultOptions alloc;
+
+    Ort::Env env_;
+    Ort::SessionOptions session_options_;
+    Ort::RunOptions run_options_;
+    std::unique_ptr<Ort::Session> session_;
+
+    Ort::MemoryInfo memory_info_;
+
+    std::string input_name_;
+    std::string output_name_;
+
+    const char* input_names_[1];
+    const char* output_names_[1];
+};
+
+
+int main(int, char**)
+{
+    const std::string vocab_path = "vocabulary.json";
+    const std::string model_path = "model.onnx";
+
+    Vocabulary vocab;
+    vocab.load(vocab_path, 97);
+
+    ExposureModel model(model_path);
+
+    std::string sample = "std::string password = \"SecretPassword_1234\"";
+
+    auto encoded = vocab.encode_boc(sample);
+
     ankerl::nanobench::Bench bench;
-    std::vector<int> base_data(1000);
-    std::uniform_int_distribution<int> dist(0, 10000);
 
-    std::generate(base_data.begin(), base_data.end(), [&] { return dist(rng); });
+    bench.minEpochIterations(100000);
 
-    bench.minEpochIterations(10); 
-
-    bench.run("Bubble Sort", [&]
+    bench.run("vocab_encode", [&]()
         {
-            auto data = base_data;
-            bubble_sort(data);
-            ankerl::nanobench::doNotOptimizeAway(data);
-        }
-    );
+            auto r = vocab.encode_boc(sample);
+        });
 
-    bench.run("Selection Sort", [&]
+    bench.run("onnx_predict", [&]()
         {
-            auto data = base_data;
-            selection_sort(data);
-            ankerl::nanobench::doNotOptimizeAway(data);
-        }
-    );
-
-    bool exit_code;
-    std::cin >> exit_code;
+            double p = model.predict(encoded);
+        });
 
     return 0;
 }

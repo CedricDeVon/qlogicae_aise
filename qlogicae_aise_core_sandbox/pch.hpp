@@ -1,5 +1,7 @@
 #pragma once
 
+#include <indicators/progress_spinner.hpp>
+
 #include <any>
 #include <compare>
 #include <variant>
@@ -98,6 +100,9 @@
 #include <cstring>
 
 #include <windows.h>
+
+#include "qlogicae_aise_core/includes/all.hpp"
+#include "qlogicae_core/includes/all.hpp"
 
 namespace QLogicaeAiseCoreSandbox
 {

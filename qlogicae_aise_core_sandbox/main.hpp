@@ -2,9 +2,6 @@
 
 #include "qlogicae_aise_core_sandbox/includes/application.hpp"
 
-#include "qlogicae_aise_core/includes/all.hpp"
-#include "qlogicae_core/includes/all.hpp"
-
 int main(int, char**);
 
 int WINAPI WinMain(
