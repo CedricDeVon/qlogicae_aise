@@ -8,7 +8,7 @@ extern "C" void x64_masm__main();
 
 #endif
 
-namespace QLogicaeKnightVisionAiCore
+namespace QLogicaeAiseCore
 {
 
 }

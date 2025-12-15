@@ -2,10 +2,7 @@
 
 #include "../includes/application.hpp"
 
-namespace QLogicaeKnightVisionAiCore
+namespace QLogicaeAiseCore
 {
-	void confirm_project_setup()
-	{
-		QLogicaeCore::CLI_IO.print_with_new_line("QLogicaeKnightVisionAiCore - Confirmed!");
-	}
+	
 }

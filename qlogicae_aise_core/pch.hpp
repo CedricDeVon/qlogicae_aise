@@ -2,6 +2,12 @@
 
 #include "framework.h"
 
+#include <absl/strings/str_cat.h>
+#include <absl/strings/str_replace.h>
+
+#include <nlohmann/json.hpp>
+#include <onnxruntime_cxx_api.h>
+
 #include <any>
 #include <compare>
 #include <variant>
@@ -100,6 +106,8 @@
 #include <cstring>
 
 #include <windows.h>
+
+#include "qlogicae_core/includes/all.hpp"
 
 namespace QLogicaeAiseCore
 {

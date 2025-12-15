@@ -11,6 +11,9 @@
 #include <indicators/progress_spinner.hpp>
 #include <indicators/block_progress_bar.hpp>
 
+#include <nlohmann/json.hpp>
+#include <onnxruntime_cxx_api.h>
+
 #include <any>
 #include <compare>
 #include <variant>
@@ -121,6 +124,14 @@
 #include "qlogicae_core/includes/json_file_io.hpp"
 #include "qlogicae_core/includes/log_configurations.hpp"
 #include "qlogicae_core/includes/application_utilities.hpp"
+
+#include "qlogicae_aise_core/includes/aise_api.hpp"
+#include "qlogicae_aise_core/includes/aise_api_configurations.hpp"
+#include "qlogicae_aise_core/includes/aise_api_file_evaluation_results.hpp"
+#include "qlogicae_aise_core/includes/aise_api_file_line_evaluation_results.hpp"
+#include "qlogicae_aise_core/includes/aise_api_file_system_evaluation_results.hpp"
+#include "qlogicae_aise_core/includes/aise_api_file_system_evaluation_configurations.hpp"
+
 
 namespace QLogicaeAiseConsole
 {

@@ -2,5 +2,9 @@
 
 namespace QLogicaeAiseCore
 {
+	struct AiseApiConfigurations
+	{
 
+
+	};
 }

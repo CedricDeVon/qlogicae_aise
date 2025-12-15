@@ -147,6 +147,23 @@ namespace QLogicaeAiseConsole
 			return result.set_to_bad_status_without_value();
 		}
 
+		QLogicaeAiseCore::AISE_API.setup(
+			result,
+			QLogicaeAiseCore::AiseApiConfigurations
+			{
+
+			}
+		);
+		if (result.is_status_unsafe())
+		{
+			QLogicaeCore::LOGGER.handle_exception_async(
+				"QLogicaeAiseConsole::Application::setup()",
+				"Setup failed"
+			);
+
+			return result.set_to_bad_status_without_value();
+		}
+
 		if (
 			!_setup_view_command() ||
 			!_setup_evaluate_command()
@@ -524,6 +541,13 @@ namespace QLogicaeAiseConsole
 					"evaluations"
 				);
 			evaluate_command->alias("e");
+			
+			evaluate_command
+				->add_option("--relative-folder-path",
+					STRING_INPUTS.get("evaluate", "relative_folder_path"),
+					"Relative folder path to evaluate")
+				->default_val("");
+
 
 			evaluate_command
 				->add_option("--is-verbose",
@@ -540,6 +564,10 @@ namespace QLogicaeAiseConsole
 					bool evaluate_command__is_verbose =
 						BOOLEAN_INPUTS.get(
 							"evaluate", "is_verbose"
+						);
+					std::string evaluate_command__relative_folder_path =
+						STRING_INPUTS.get(
+							"evaluate", "relative_folder_path"
 						);
 
 					QLogicaeCore::LogConfigurations console_log_configurations_1 =
@@ -561,6 +589,16 @@ namespace QLogicaeAiseConsole
 							"aise evaluate",
 							console_log_configurations_1
 						);
+
+						QLogicaeCore::Result<QLogicaeAiseCore::AiseApiFileSystemEvaluationResults> aise_results;
+
+						QLogicaeAiseCore::AISE_API.evaluate(
+							aise_results,
+							QLogicaeAiseCore::AiseApiFileSystemEvaluationConfigurations
+							{
+								.relative_folder_path = evaluate_command__relative_folder_path
+							}
+							);
 
 						LOGGER.log_complete(
 							void_result,

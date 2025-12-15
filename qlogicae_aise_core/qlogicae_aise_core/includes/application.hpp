@@ -2,9 +2,7 @@
 
 #include "utilities.hpp"
 
-#include "qlogicae_core/includes/all.hpp"
-
-namespace QLogicaeKnightVisionAiCore
+namespace QLogicaeAiseCore
 {
-	void confirm_project_setup();
+	
 }
