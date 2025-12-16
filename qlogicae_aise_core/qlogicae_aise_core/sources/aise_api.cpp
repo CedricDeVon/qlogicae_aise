@@ -391,7 +391,7 @@ namespace QLogicaeAiseCore
 		AiseApiFileSystemEvaluationResults file_system_evaluation_results;
 		AiseApiFileSystemEvaluationCallbackConfigurationsResults callback_configurations_results;		
 
-		callback_configurations_results.text = "Evaluating...";
+		callback_configurations_results.text = "  Evaluating Files";
 		configurations.file_evaluation_callback(callback_configurations_results);
 
 		for (const auto& file_system_entity : std::filesystem::recursive_directory_iterator(

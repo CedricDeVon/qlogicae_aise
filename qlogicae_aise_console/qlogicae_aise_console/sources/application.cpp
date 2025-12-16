@@ -647,7 +647,7 @@ namespace QLogicaeAiseConsole
 						progress_spinner.set_option(
 							indicators::option::ShowPercentage{ false }
 						);
-						
+												
 						QLogicaeAiseCore::AISE_API.evaluate(
 							aise_results,
 							QLogicaeAiseCore::AiseApiFileSystemEvaluationConfigurations
@@ -658,7 +658,7 @@ namespace QLogicaeAiseConsole
 									evaluate_command__expected_file_extensions_vector,
 								.file_evaluation_callback =
 									[&progress_spinner](const QLogicaeAiseCore::AiseApiFileSystemEvaluationCallbackConfigurationsResults& callback_results)
-								{									
+								{	
 									progress_spinner.set_option(
 										indicators::option::PostfixText
 										{
