@@ -33,27 +33,27 @@
     <None Include="qlogicae\application\documentation\1.0.0\security.md" />
     <None Include="qlogicae\application\documentation\index.md" />
     <None Include="qlogicae\application\documentation\release-notes.md" />
-    <None Include="qlogicae\application\templates\default\build\qlogicae\application\assets\logos\dark_1_1.svg" />
-    <None Include="qlogicae\application\templates\default\build\qlogicae\application\assets\logos\dark_1_2.svg" />
-    <None Include="qlogicae\application\templates\default\build\qlogicae\application\assets\logos\light_1_1.svg" />
-    <None Include="qlogicae\application\templates\default\build\qlogicae\application\assets\logos\light_1_2.svg" />
-    <None Include="qlogicae\application\templates\default\build\qlogicae\application\assets\logos\transparent_1.svg" />
-    <None Include="qlogicae\application\templates\default\build\qlogicae\application\assets\logos\transparent_2.svg" />
+    <None Include="qlogicae\application\assets\logos\dark_1_1.svg" />
+    <None Include="qlogicae\application\assets\logos\dark_1_2.svg" />
+    <None Include="qlogicae\application\assets\logos\light_1_1.svg" />
+    <None Include="qlogicae\application\assets\logos\light_1_2.svg" />
+    <None Include="qlogicae\application\assets\logos\transparent_1.svg" />
+    <None Include="qlogicae\application\assets\logos\transparent_2.svg" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="qlogicae\application\templates\default\build\qlogicae\application\assets\application.ico" />
-    <Image Include="qlogicae\application\templates\default\build\qlogicae\application\assets\logos\dark_1_1.ico" />
-    <Image Include="qlogicae\application\templates\default\build\qlogicae\application\assets\logos\dark_1_1.png" />
-    <Image Include="qlogicae\application\templates\default\build\qlogicae\application\assets\logos\dark_1_2.ico" />
-    <Image Include="qlogicae\application\templates\default\build\qlogicae\application\assets\logos\dark_1_2.png" />
-    <Image Include="qlogicae\application\templates\default\build\qlogicae\application\assets\logos\light_1_1.ico" />
-    <Image Include="qlogicae\application\templates\default\build\qlogicae\application\assets\logos\light_1_1.png" />
-    <Image Include="qlogicae\application\templates\default\build\qlogicae\application\assets\logos\light_1_2.ico" />
-    <Image Include="qlogicae\application\templates\default\build\qlogicae\application\assets\logos\light_1_2.png" />
-    <Image Include="qlogicae\application\templates\default\build\qlogicae\application\assets\logos\transparent_1.ico" />
-    <Image Include="qlogicae\application\templates\default\build\qlogicae\application\assets\logos\transparent_1.png" />
-    <Image Include="qlogicae\application\templates\default\build\qlogicae\application\assets\logos\transparent_2.ico" />
-    <Image Include="qlogicae\application\templates\default\build\qlogicae\application\assets\logos\transparent_2.png" />
+    <Image Include="qlogicae\application\assets\logos\dark_1_1.ico" />
+    <Image Include="qlogicae\application\assets\logos\dark_1_1.png" />
+    <Image Include="qlogicae\application\assets\logos\dark_1_2.ico" />
+    <Image Include="qlogicae\application\assets\logos\dark_1_2.png" />
+    <Image Include="qlogicae\application\assets\logos\light_1_1.ico" />
+    <Image Include="qlogicae\application\assets\logos\light_1_1.png" />
+    <Image Include="qlogicae\application\assets\logos\light_1_2.ico" />
+    <Image Include="qlogicae\application\assets\logos\light_1_2.png" />
+    <Image Include="qlogicae\application\assets\logos\transparent_1.ico" />
+    <Image Include="qlogicae\application\assets\logos\transparent_1.png" />
+    <Image Include="qlogicae\application\assets\logos\transparent_2.ico" />
+    <Image Include="qlogicae\application\assets\logos\transparent_2.png" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="qlogicae\application\templates\default\build\qlogicae\application\documentation\LICENSE.txt" />

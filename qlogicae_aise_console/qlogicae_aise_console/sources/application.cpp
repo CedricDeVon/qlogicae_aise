@@ -575,13 +575,13 @@ namespace QLogicaeAiseConsole
 			evaluate_command->alias("e");
 			
 			evaluate_command
-				->add_option("--path",
+				->add_option("--target-folder-path",
 					STRING_INPUTS.get("evaluate", "path"),
 					"root folder path to evaluate files recursively")
 				->default_val(QLogicaeCore::UTILITIES.FULL_EXECUTED_FOLDER_PATH);
 
 			evaluate_command
-				->add_option("--extensions",
+				->add_option("--target-extensions",
 					STRING_INPUTS.get("evaluate", "extensions"),
 					"expected file extensions for parsing and evaluation")
 				->default_val(".hpp,.cpp");
@@ -613,6 +613,28 @@ namespace QLogicaeAiseConsole
 				->default_val(true);
 
 			evaluate_command
+				->add_option("--is-evaluation-file-output-enabled",
+					BOOLEAN_INPUTS.get("evaluate", "is_evaluation_file_output_enabled"),
+					"enables or disables evaluation file output")
+				->default_val(true);
+
+			evaluate_command
+				->add_option("--evaluation-folder-output-path",
+					STRING_INPUTS.get("evaluate", "evaluation_folder_output_path"),
+					"the relative path of the evaluation folder output")
+				->default_val("qlogicae\\.qlogicae\\aise\\evaluate");
+
+			evaluate_command
+				->add_option("--evaluation-file",
+					STRING_INPUTS.get("evaluate", "evaluation_file"),
+					"the name and extensions of the evaluation file output itself")
+				->default_val(
+					QLogicaeCore::TIME.now(
+						QLogicaeCore::TimeFormat::FULL_DASHED_TIMESTAMP
+					) + ".log"
+				);
+
+			evaluate_command
 				->add_option("--is-verbose",
 					BOOLEAN_INPUTS.get("evaluate", "is_verbose"),
 					"enables or disables verbose console logging")
@@ -625,6 +647,7 @@ namespace QLogicaeAiseConsole
 					bool
 						evaluate_command__is_verbose,
 						evaluate_command__is_overview_visible,
+						evaluate_command__is_evaluation_file_output_enabled,
 						evaluate_command__is_positive_line_prediction_visible;
 
 					size_t
@@ -636,11 +659,11 @@ namespace QLogicaeAiseConsole
 						total_negative_prediction_count;
 
 					double
-						total_timestamp_start,
 						total_timestamp_end,
+						total_timestamp_start,
 						total_positive_prediction_count_ratio,
-						total_positive_prediction_count_percentage,
 						total_negative_prediction_count_ratio,
+						total_positive_prediction_count_percentage,
 						total_negative_prediction_count_percentage,
 						evaluate_command__minimum_positive_prediction,
 						evaluate_command__maximum_positive_prediction;
@@ -648,35 +671,37 @@ namespace QLogicaeAiseConsole
 					std::string
 						token,
 						evaluate_command__path,
-						evaluate_command__extensions;
+						evaluate_command__extensions,
+						evaluate_command__evaluation_file,
+						evaluate_command__evaluation_folder_output_path;
 
 
-					std::vector<std::string> evaluate_command__expected_file_extensions_vector;
+					std::vector<std::string>
+						evaluate_command__expected_file_extensions_vector;
 
-					QLogicaeCore::Result<void> void_result;
-					QLogicaeCore::Result<QLogicaeAiseCore::AiseApiFileSystemEvaluationResults> aise_results;
+					QLogicaeCore::Result<void>
+						void_result;
 
-					tabulate::Table summary_table;
-					std::ostringstream output_stream;
+					QLogicaeCore::Result<QLogicaeAiseCore::AiseApiFileSystemEvaluationResults>
+						aise_results;
 
-					DWORD mode;
-					HANDLE handle;
-					CONSOLE_CURSOR_INFO cursor_info;
+					tabulate::Table
+						summary_table;
 
-					evaluate_command__is_verbose =
-						BOOLEAN_INPUTS.get(
-							"evaluate", "is_verbose"
-						);
+					QLogicaeCore::TextFileIO
+						text_file_io;
 
-					evaluate_command__is_overview_visible =
-						BOOLEAN_INPUTS.get(
-							"evaluate", "is_overview_visible"
-						);
+					std::ostringstream
+						output_stream;
 
-					evaluate_command__is_positive_line_prediction_visible =
-						BOOLEAN_INPUTS.get(
-							"evaluate", "is_positive_line_prediction_visible"
-						);
+					DWORD
+						mode;
+
+					HANDLE
+						handle;
+
+					CONSOLE_CURSOR_INFO
+						cursor_info;
 
 					evaluate_command__path =
 						STRING_INPUTS.get(
@@ -697,6 +722,41 @@ namespace QLogicaeAiseConsole
 						DOUBLE_INPUTS.get(
 							"evaluate", "maximum_positive_prediction"
 						);
+
+					evaluate_command__is_overview_visible =
+						BOOLEAN_INPUTS.get(
+							"evaluate", "is_overview_visible"
+						);
+
+					evaluate_command__is_positive_line_prediction_visible =
+						BOOLEAN_INPUTS.get(
+							"evaluate", "is_positive_line_prediction_visible"
+						);
+
+					evaluate_command__extensions =
+						STRING_INPUTS.get(
+							"evaluate", "extensions"
+						);
+
+					evaluate_command__is_evaluation_file_output_enabled =
+						BOOLEAN_INPUTS.get(
+							"evaluate", "is_evaluation_file_output_enabled"
+						);
+
+					evaluate_command__evaluation_folder_output_path =
+						STRING_INPUTS.get(
+							"evaluate", "evaluation_folder_output_path"
+						);
+
+					evaluate_command__evaluation_file =
+						STRING_INPUTS.get(
+							"evaluate", "evaluation_file"
+						);
+
+					evaluate_command__is_verbose =
+						BOOLEAN_INPUTS.get(
+							"evaluate", "is_verbose"
+						); 
 
 					for (char character : evaluate_command__extensions)
 					{
@@ -843,28 +903,75 @@ namespace QLogicaeAiseConsole
 
 						summary_table.add_row(
 							{
-								"Metric",
+								"Property",
 								"Value"
 							}
 						);
 
 						summary_table.add_row(
 							{
-								"Path",
-								evaluate_command__path
+								"Application Version",
+								QLogicaeCore::QLOGICAE_APPLICATION_UTILITIES.CONFIGURATIONS_APPLICATION_VERSION
 							}
 						);
 
 						summary_table.add_row(
 							{
-								"Extensions",
+								"Timestamp Created",
+								QLogicaeCore::TIME.now(
+									QLogicaeCore::TimeFormat::ISO8601
+								)
+							}
+						);
+
+						summary_table.add_row(
+							{
+								"Evaluation Duration (In Seconds)",
+								std::to_string(
+									(total_timestamp_end - total_timestamp_start) / 1'000'000'000
+								)
+							}
+						);
+
+						summary_table.add_row(
+							{
+								"Is File Output Enabled",
+								(evaluate_command__is_evaluation_file_output_enabled) ?
+									"true" :
+									"false"
+							}
+						);
+
+						summary_table.add_row(
+							{
+								"Target Folder Path",
+								(evaluate_command__is_evaluation_file_output_enabled) ?
+									evaluate_command__path :
+									"None"
+							}
+						);
+						
+						summary_table.add_row(
+							{
+								"File Output Path",
+								(evaluate_command__is_evaluation_file_output_enabled) ?
+									evaluate_command__evaluation_folder_output_path +
+									"\\" + evaluate_command__evaluation_file :
+									"None"
+								
+							}
+						);
+
+						summary_table.add_row(
+							{
+								"Target Extensions",
 								(evaluate_command__extensions.size()) ? evaluate_command__extensions : "all"
 							}
 						);
 
 						summary_table.add_row(
 							{
-								"Minimum Positive Prediction",
+								"Minimum Positive Line Prediction",
 								std::to_string(
 									evaluate_command__minimum_positive_prediction
 								)
@@ -873,21 +980,13 @@ namespace QLogicaeAiseConsole
 
 						summary_table.add_row(
 							{
-								"Maximum Positive Prediction",
+								"Maximum Positive Line Prediction",
 								std::to_string(
 									evaluate_command__maximum_positive_prediction
 								)
 							}
 						);
 
-						summary_table.add_row(
-							{
-								"Duration (In Seconds)",
-								std::to_string(
-									(total_timestamp_end - total_timestamp_start) / 1'000'000'000
-								)
-							}
-						);
 
 						summary_table.add_row(
 							{
@@ -900,10 +999,16 @@ namespace QLogicaeAiseConsole
 
 						summary_table.add_row(
 							{
-								"Files Found and Parsed",
+								"Files Found",
 								std::to_string(
 									total_files_found_count
-								) + " | " +
+								)
+							}
+						);
+
+						summary_table.add_row(
+							{
+								"Files Parsed",
 								std::to_string(
 									total_files_parsed_count
 								)
@@ -921,7 +1026,7 @@ namespace QLogicaeAiseConsole
 
 						summary_table.add_row(
 							{
-								"Positive Predictions",
+								"Positive Line Predictions",
 								std::to_string(
 									total_positive_prediction_count
 								) + " | " +
@@ -936,7 +1041,7 @@ namespace QLogicaeAiseConsole
 
 						summary_table.add_row(
 							{
-								"Negative Predictions",
+								"Negative Line Predictions",
 								std::to_string(
 									total_negative_prediction_count
 								) + " | " +
@@ -1036,11 +1141,32 @@ namespace QLogicaeAiseConsole
 							"aise evaluate",
 							console_log_configurations_1
 						);
+						
 						LOGGER.log(
 							void_result,
 							std::string("\n") + output_stream.str() + std::string("\n"),
 							console_log_configurations_2
 						);
+
+						if (evaluate_command__is_evaluation_file_output_enabled)
+						{
+							if (!std::filesystem::exists(evaluate_command__evaluation_folder_output_path))
+							{
+								std::filesystem::create_directories(
+									evaluate_command__evaluation_folder_output_path
+								);															
+							}
+
+							text_file_io.setup(
+								evaluate_command__evaluation_folder_output_path +
+								"\\" + evaluate_command__evaluation_file
+							);
+
+							text_file_io.write(
+								output_stream.str()
+							);
+						}
+
 						LOGGER.log_complete(
 							void_result,
 							"aise evaluate",
