@@ -575,59 +575,119 @@ namespace QLogicaeAiseConsole
 			evaluate_command->alias("e");
 			
 			evaluate_command
-				->add_option("--root-folder-path",
-					STRING_INPUTS.get("evaluate", "root_folder_path"),
-					"Root folder path to evaluate")
+				->add_option("--path",
+					STRING_INPUTS.get("evaluate", "path"),
+					"root folder path to evaluate files recursively")
 				->default_val(QLogicaeCore::UTILITIES.FULL_EXECUTED_FOLDER_PATH);
 
 			evaluate_command
-				->add_option("--expected-file-extensions",
-					STRING_INPUTS.get("evaluate", "expected_file_extensions"),
-					"Expected file extensions")
+				->add_option("--extensions",
+					STRING_INPUTS.get("evaluate", "extensions"),
+					"expected file extensions for parsing and evaluation")
 				->default_val(".hpp,.cpp");
+
+			evaluate_command
+				->add_option("--minimum-positive-prediction",
+					DOUBLE_INPUTS.get("evaluate", "minimum_positive_prediction"),
+					"the minimum prediction inclusive value to be labeled as 'positive'")
+				->check(CLI::Range(0.0, 1.0))
+				->default_val(0.99);
+
+			evaluate_command
+				->add_option("--maximum-positive-prediction",
+					DOUBLE_INPUTS.get("evaluate", "maximum_positive_prediction"),
+					"the maximum prediction inclusive value to be labeled as 'positive'")
+				->check(CLI::Range(0.0, 1.0))
+				->default_val(1);
 
 			evaluate_command
 				->add_option("--is-verbose",
 					BOOLEAN_INPUTS.get("evaluate", "is_verbose"),
-					"Enables or disables verbose console logging")
+					"enables or disables verbose console logging")
 				->default_val(false);
 
 			UTILITIES.CLI_APPLICATION_COMMANDS["evaluate"] = std::make_pair(
 				evaluate_command,
 				[this]() -> bool
-				{
-					QLogicaeCore::Result<void> void_result;
+				{					
+					bool
+						evaluate_command__is_verbose;
 
-					bool evaluate_command__is_verbose =
+					size_t
+						total_line_count,
+						total_positive_prediction_count,
+						total_negative_prediction_count;
+
+					double
+						total_timestamp_start,
+						total_timestamp_end,
+						total_positive_prediction_count_ratio,
+						total_positive_prediction_count_percentage,
+						total_negative_prediction_count_ratio,
+						total_negative_prediction_count_percentage,
+						evaluate_command__minimum_positive_prediction,
+						evaluate_command__maximum_positive_prediction;
+
+					std::string
+						token,
+						evaluate_command__path,
+						evaluate_command__extensions;
+
+
+					std::vector<std::string> evaluate_command__expected_file_extensions_vector;
+
+					QLogicaeCore::Result<void> void_result;
+					QLogicaeCore::Result<QLogicaeAiseCore::AiseApiFileSystemEvaluationResults> aise_results;
+
+					tabulate::Table summary_table;
+					std::ostringstream output_stream;
+
+					DWORD mode;
+					HANDLE handle;
+					CONSOLE_CURSOR_INFO cursor_info;
+
+					evaluate_command__is_verbose =
 						BOOLEAN_INPUTS.get(
 							"evaluate", "is_verbose"
 						);
-					std::string evaluate_command__root_folder_path =
+					evaluate_command__path =
 						STRING_INPUTS.get(
-							"evaluate", "root_folder_path"
+							"evaluate", "path"
 						);
 
-					std::string evaluate_command__expected_file_extensions =
+					evaluate_command__extensions =
 						STRING_INPUTS.get(
-							"evaluate", "expected_file_extensions"
+							"evaluate", "extensions"
 						);
 
-					std::vector<std::string> evaluate_command__expected_file_extensions_vector;
-					std::string token;
-					for (char ch : evaluate_command__expected_file_extensions)
+					evaluate_command__minimum_positive_prediction =
+						DOUBLE_INPUTS.get(
+							"evaluate", "minimum_positive_prediction"
+						);
+
+					evaluate_command__maximum_positive_prediction =
+						DOUBLE_INPUTS.get(
+							"evaluate", "maximum_positive_prediction"
+						);
+
+					for (char character : evaluate_command__extensions)
 					{
-						if (ch == ',')
+						if (character == ',')
 						{
-							evaluate_command__expected_file_extensions_vector.push_back(token);
+							evaluate_command__expected_file_extensions_vector
+								.push_back(token);
 							token.clear();
 						}
 						else
 						{
-							token.push_back(ch);
+							token.push_back(
+								character
+							);
 						}
 					}
-					evaluate_command__expected_file_extensions_vector.push_back(token);
-					
+					evaluate_command__expected_file_extensions_vector
+						.push_back(token);
+
 					QLogicaeCore::LogConfigurations console_log_configurations_1 =
 					{
 						.is_console_enabled = evaluate_command__is_verbose,
@@ -642,27 +702,18 @@ namespace QLogicaeAiseConsole
 
 					try
 					{
-						LOGGER.log_running(
-							void_result,
-							"aise evaluate",
-							console_log_configurations_1
-						);
-
-						QLogicaeCore::Result<QLogicaeAiseCore::AiseApiFileSystemEvaluationResults> aise_results;
-
 						SetConsoleOutputCP(CP_UTF8);
 						SetConsoleCP(CP_UTF8);
-
-						HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
-						DWORD mode = 0;
+						handle = GetStdHandle(STD_OUTPUT_HANDLE);
+						mode = 0;						
 						GetConsoleMode(handle, &mode);
 						mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
 						SetConsoleMode(handle, mode);
-
-						CONSOLE_CURSOR_INFO cursor_info;
 						GetConsoleCursorInfo(handle, &cursor_info);
 						cursor_info.bVisible = FALSE;
 						SetConsoleCursorInfo(handle, &cursor_info);
+
+						std::cout << "\x1b[2J\x1b[H";
 
 						indicators::ProgressSpinner progress_spinner
 						{
@@ -675,22 +726,36 @@ namespace QLogicaeAiseConsole
 								std::vector<indicators::FontStyle>{indicators::FontStyle::bold}
 							}
 						};
-						
+
 						progress_spinner.set_option(
-							indicators::option::ShowPercentage{ false }
+							indicators::option::ForegroundColor
+							{
+								indicators::Color::white
+							}
 						);
-												
+
+						progress_spinner.set_option(
+							indicators::option::ShowPercentage
+							{
+								false
+							}
+						);
+
 						QLogicaeAiseCore::AISE_API.evaluate(
 							aise_results,
 							QLogicaeAiseCore::AiseApiFileSystemEvaluationConfigurations
 							{
 								.root_folder_path =
-									evaluate_command__root_folder_path,
+									evaluate_command__path,
 								.expected_file_extensions =
 									evaluate_command__expected_file_extensions_vector,
+								.minimum_positive_prediction =
+									evaluate_command__minimum_positive_prediction,
+								.maximum_positive_prediction =
+									evaluate_command__maximum_positive_prediction,
 								.file_evaluation_callback =
 									[&progress_spinner](const QLogicaeAiseCore::AiseApiFileSystemEvaluationCallbackConfigurationsResults& callback_results)
-								{	
+								{
 									progress_spinner.set_option(
 										indicators::option::PostfixText
 										{
@@ -698,53 +763,230 @@ namespace QLogicaeAiseConsole
 										}
 									);
 
+									std::cout << "\x1b[2J\x1b[H";
 									progress_spinner.tick();
 								}
 							}
 						);
 
 						progress_spinner.set_option(
-							indicators::option::ForegroundColor { indicators::Color::green }
+							indicators::option::PostfixText
+							{
+								"  Generating Summary"
+							}
 						);
-						progress_spinner.set_option(
-							indicators::option::ShowSpinner { false }
+
+						total_line_count =
+							aise_results.get_value().total_line_count;
+						total_positive_prediction_count =
+							aise_results.get_value().total_positive_prediction_count;
+						total_negative_prediction_count =
+							total_line_count - total_positive_prediction_count;
+
+						total_timestamp_start =
+							aise_results.get_value().timestamp_start;
+						total_timestamp_end =
+							aise_results.get_value().timestamp_end;
+
+						total_positive_prediction_count_ratio =
+							(total_line_count) ?
+								(static_cast<double>(total_positive_prediction_count) / static_cast<double>(total_line_count)) :
+								0;
+
+						total_positive_prediction_count_percentage =
+							(total_positive_prediction_count_ratio) * 100;
+
+						total_negative_prediction_count_ratio =
+							(total_line_count) ?
+								static_cast<double>(total_negative_prediction_count) / static_cast<double>(total_line_count) :
+								0;
+						total_negative_prediction_count_percentage =
+							(total_negative_prediction_count_ratio) * 100;
+
+						summary_table.add_row(
+							{
+								"Metric",
+								"Value"
+							}
 						);
+
+						summary_table.add_row(
+							{
+								"Path",
+								evaluate_command__path
+							}
+						);
+
+						summary_table.add_row(
+							{
+								"Extensions",
+								(evaluate_command__extensions.size()) ? evaluate_command__extensions : "all"
+							}
+						);
+
+						summary_table.add_row(
+							{
+								"Minimum Positive Prediction",
+								std::to_string(
+									evaluate_command__minimum_positive_prediction
+								)
+							}
+						);
+
+						summary_table.add_row(
+							{
+								"Maximum Positive Prediction",
+								std::to_string(
+									evaluate_command__maximum_positive_prediction
+								)
+							}
+						);
+
+						summary_table.add_row(
+							{
+								"Duration (In Seconds)",
+								std::to_string(
+									(total_timestamp_end - total_timestamp_start) / 1'000'000'000
+								)
+							}
+						);
+
+						summary_table.add_row(
+							{
+								"Line Count",
+								std::to_string(
+									total_line_count
+								)
+							}
+						);
+
+						summary_table.add_row(
+							{
+								"Positive Predictions",
+								std::to_string(
+									total_positive_prediction_count
+								) + " | " +
+								std::to_string(
+									total_positive_prediction_count_percentage
+								) + "% | " +
+								std::to_string(
+									total_positive_prediction_count_ratio
+								)
+							}
+						);
+
+						summary_table.add_row(
+							{
+								"Negative Predictions",
+								std::to_string(
+									total_negative_prediction_count
+								) + " | " +
+								std::to_string(
+									total_negative_prediction_count_percentage
+								) + "% | " +
+								std::to_string(
+									total_negative_prediction_count_ratio
+								)
+							}
+						);
+
+						summary_table.format()
+							.font_style({ tabulate::FontStyle::bold })
+							.border_top("-")
+							.border_bottom("-")
+							.border_left("|")
+							.border_right("|")
+							.corner("+");
+
+						output_stream << summary_table;
+
+						if (aise_results.get_value().total_positive_prediction_count)
+						{							
+							for (const auto& [file_path, file_evaluation_result] :
+								aise_results.get_value().positive_file_evaluation_results
+							)
+							{
+								tabulate::Table file_table;
+
+								file_table.add_row(
+									{
+										"Prediction",
+										"Line",
+										"Text"
+									}
+								);
+
+								output_stream
+									<< "\n\n> "
+									<< "\x1b]8;;file:///" << file_path << "\x1b\\"
+									<< file_path
+									<< "\x1b]8;;\x1b\\"
+									<< "\n";
+
+								for (const auto& file_line_evaluation_result :
+									file_evaluation_result.file_line_evaluation_results)
+								{
+									file_table.add_row(
+										{
+											std::to_string(
+												file_line_evaluation_result.line_prediction
+											),
+											std::to_string(
+												file_line_evaluation_result.line_number
+											),
+											file_line_evaluation_result.line_text
+										}
+									);
+								}
+
+								file_table.format()
+									.font_align(tabulate::FontAlign::left)
+									.border_top("-")
+									.border_bottom("-")
+									.border_left("|")
+									.border_right("|")
+									.corner("+");
+
+								output_stream << file_table;
+
+								std::cout << "\x1b[2J\x1b[H";
+								progress_spinner.tick();
+							}
+						}
+
+						output_stream << "\n";
 						
+						std::cout << "\x1b[2J\x1b[H";
+
 						progress_spinner.set_option(
 							indicators::option::PostfixText
 							{
-								"✔  Completed | " + std::to_string((aise_results.get_value().timestamp_end - aise_results.get_value().timestamp_start) / 1000000000) + " Seconds"
+								"✔  Evaluation Complete"
 							}
 						);
-						progress_spinner.mark_as_completed();
 
-						handle = GetStdHandle(STD_OUTPUT_HANDLE);
-						GetConsoleCursorInfo(handle, &cursor_info);
-						cursor_info.bVisible = TRUE;
-						SetConsoleCursorInfo(handle, &cursor_info);
+						progress_spinner.mark_as_completed();						
 
-						std::cout << aise_results.get_value().file_evaluation_results.size() << "\n";
-
-						for (const auto& [file_path, file_evaluation_result] :
-							aise_results.get_value().file_evaluation_results)
-						{
-							std::cout << file_path << file_evaluation_result.file_line_evaluation_results.size() << ":\n";
-							for (const auto& file_line_evaluation_result :
-								file_evaluation_result.file_line_evaluation_results)
-							{
-								std::cout << "\t" <<
-									file_line_evaluation_result.line_number << " | "
-									<< file_line_evaluation_result.line_prediction << " | "
-									// << file_line_evaluation_result.line_size << " | "
-									<< file_line_evaluation_result.line_text << "\n";
-							}
-						}
-						
+						LOGGER.log_running(
+							void_result,
+							"aise evaluate",
+							console_log_configurations_1
+						);
+						LOGGER.log(
+							void_result,
+							std::string("\n") + output_stream.str() + std::string("\n"),
+							console_log_configurations_2
+						);
 						LOGGER.log_complete(
 							void_result,
 							"aise evaluate",
 							console_log_configurations_1
 						);
+
+						handle = GetStdHandle(STD_OUTPUT_HANDLE);
+						GetConsoleCursorInfo(handle, &cursor_info);
+						cursor_info.bVisible = TRUE;
+						SetConsoleCursorInfo(handle, &cursor_info);
 
 						return true;
 					}

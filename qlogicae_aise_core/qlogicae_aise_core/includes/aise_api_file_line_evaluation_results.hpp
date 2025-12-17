@@ -6,9 +6,7 @@ namespace QLogicaeAiseCore
 	{		
 		std::string line_text = "";
 
-		size_t line_number = 0;
-
-		size_t line_size = 0;
+		std::size_t line_number = 0;
 
 		double line_prediction = 0.0;
 

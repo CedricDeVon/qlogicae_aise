@@ -7,6 +7,8 @@
 #include <absl/strings/str_cat.h>
 #include <absl/strings/str_replace.h>
 
+#include <tabulate/table.hpp>
+
 #pragma warning(push)
 #pragma warning(disable: 4267)
 #include <indicators/cursor_control.hpp>

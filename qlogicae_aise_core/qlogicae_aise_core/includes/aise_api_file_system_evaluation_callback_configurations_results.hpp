@@ -6,6 +6,6 @@ namespace QLogicaeAiseCore
 	{
 		std::string text = "";
 
-		size_t file_number = 0;
+		std::size_t file_number = 0;
 	};
 }

@@ -394,21 +394,28 @@ namespace QLogicaeAiseCore
 		callback_configurations_results.text = "  Evaluating Files";
 		configurations.file_evaluation_callback(callback_configurations_results);
 
-		for (const auto& file_system_entity : std::filesystem::recursive_directory_iterator(
-			configurations.root_folder_path,
-			std::filesystem::directory_options::skip_permission_denied))
+		for (const auto& file_system_entity :
+			std::filesystem::recursive_directory_iterator(
+				configurations.root_folder_path,
+			std::filesystem::directory_options::skip_permission_denied)
+		)
 		{
 			if (!file_system_entity.is_regular_file())
 			{
 				continue;
 			}
 
-			auto file_system_entity_path = file_system_entity.path();
-			auto file_extension = file_system_entity_path.extension().string();
-			std::string file_system_entity_path_string = file_system_entity_path.string();
+			auto file_system_entity_path =
+				file_system_entity.path();
+			auto file_extension =
+				file_system_entity_path.extension().string();
+			std::string file_system_entity_path_string =
+				file_system_entity_path.string();
 
-			bool extension_matched = false;
-			for (const auto& expected_file_extension : configurations.expected_file_extensions)
+			bool extension_matched = !configurations.expected_file_extensions.size();
+			for (const auto& expected_file_extension :
+				configurations.expected_file_extensions
+				)
 			{
 				if (file_extension == expected_file_extension)
 				{
@@ -450,17 +457,31 @@ namespace QLogicaeAiseCore
 					{
 						file_line_evaluation_results.line_text = line_text;
 						file_line_evaluation_results.line_number = ++line_number;
-						file_line_evaluation_results.line_size = line_text.size();
 						file_line_evaluation_results.line_prediction =
 							NeuralNetworkModel::get_instance().predict(
 								line_text
 							);
 						file_line_evaluation_results.timestamp_end = QLogicaeCore::TIME.now();
 
+						if (configurations.minimum_positive_prediction <= file_line_evaluation_results.line_prediction &&
+							file_line_evaluation_results.line_prediction <= configurations.maximum_positive_prediction
+						)
+						{
+							++file_system_evaluation_results.total_positive_prediction_count;
+							file_system_evaluation_results.positive_file_evaluation_results[file_system_entity_path_string]
+								.file_line_evaluation_results
+								.push_back(
+									file_line_evaluation_results
+								);
+						}
+
 						file_result.file_line_evaluation_results.push_back(
 							file_line_evaluation_results
 						);
 					}
+
+					file_system_evaluation_results.total_line_count += 
+						file_result.file_line_evaluation_results.size();
 
 					file_result.timestamp_end = QLogicaeCore::TIME.now();
 					file_promise.set_value();
@@ -469,8 +490,11 @@ namespace QLogicaeAiseCore
 		}
 
 		for (auto& current_future : future_collection)
-		{
+		{			
 			current_future.get();
+			configurations.file_evaluation_callback(
+				callback_configurations_results
+			);
 		}
 
 		file_system_evaluation_results.timestamp_end = QLogicaeCore::TIME.now();
