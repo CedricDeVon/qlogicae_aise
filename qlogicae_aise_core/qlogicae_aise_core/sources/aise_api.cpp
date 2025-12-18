@@ -526,9 +526,9 @@ namespace QLogicaeAiseCore
 						handle = file.native_handle();
 
 					constexpr std::size_t
-						buffer_size = ;
+						buffer_size = 1024;
 
-					char buffer[1024];
+					char buffer[buffer_size];
 
 					while (true)
 					{
