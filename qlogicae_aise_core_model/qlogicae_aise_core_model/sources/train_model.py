@@ -10,6 +10,7 @@ import torch.nn as nn
 from tqdm import tqdm
 from pathlib import Path
 import torch.optim as optim
+from datetime import datetime
 import matplotlib.pyplot as plt
 from torch.utils.data import Dataset, DataLoader, random_split
 
@@ -23,8 +24,8 @@ class CodeLineDataset(Dataset):
         with open(csv_file_path, "r", encoding=utilities.ENCODING_TYPE) as file:
             reader = csv.DictReader(file)
             for r in reader:
-                text = r["file_content"]
-                label = float(r["label"])
+                text = r[utilities.TEXT_PROPERTY]
+                label = float(r[utilities.PREDICTION_PROPERTY])
                 self.rows.append((text, label))
 
         with open(vocabulary_file_path, "r", encoding=utilities.ENCODING_TYPE) as file:
@@ -109,9 +110,16 @@ class ExposureNet(nn.Module):
 
 def execute():
     print("> Training Model - Starts")    
+    timestamp_start = time.time_ns()
 
     if not utilities.IS_TRAINING_MODEL_ENABLED:
+        timestamp_end = time.time_ns()
         print("> Training Model - Disabled. Skipping Operation")
+        print('')
+        print('Report')
+        print(f"- Duration: {utilities.get_nanosecond_duration(timestamp_start, timestamp_end)} Seconds")
+        print(f"- Timestamp Start: {utilities.get_timestamp_string(timestamp_start)}")
+        print(f"- Timestamp End: {utilities.get_timestamp_string(timestamp_end)}")
         print("")
         return
 
@@ -358,8 +366,7 @@ def execute():
     )
 
 
-    utilities.log_to_console(f'> Training Model - Saving Log Files - Complete')
-
+    utilities.log_to_console(f'> Training Model - Saving Log Files - Complete')    
     # utilities.log_to_console(f'> Training Model - Saving PyTorch Model "{model_pth_file_path}" - Starts')
     # torch.save(model.state_dict(), model_pth_file_path)
     # utilities.log_to_console(f'> Training Model - Saving PyTorch Model "{model_pth_file_path}" - Complete')
@@ -405,8 +412,15 @@ def execute():
         opset_version=17,
     )
     utilities.log_to_console(f'> Training Model - Saving ONNX Model "{model_onnx_file_path}" - Complete')
+
+    timestamp_end = time.time_ns()
     print('')
     print('> Training Model - Complete')
+    print('')
+    print('Report')
+    print(f"- Duration: {utilities.get_nanosecond_duration(timestamp_start, timestamp_end)} Seconds")
+    print(f"- Timestamp Start: {utilities.get_timestamp_string(timestamp_start)}")
+    print(f"- Timestamp End: {utilities.get_timestamp_string(timestamp_end)}")
     print('\n')
 
     return model, ds.char_to_idx

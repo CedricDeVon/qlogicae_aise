@@ -17,7 +17,7 @@ namespace QLogicaeAiseCore
             QLogicaeCore::Result<void>& result
         );
 
-        std::future<bool> setup_async(
+        void setup_async(
             const std::function<void(const bool& result)>& callback
         );
 
@@ -91,6 +91,8 @@ namespace QLogicaeAiseCore
         EncodingManager& operator = (
             const EncodingManager& instance
         ) = delete;
+
+        std::mutex _mutex;
 
         int _lut[256];
         

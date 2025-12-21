@@ -109,7 +109,7 @@ namespace QLogicaeAiseCore
 		result.set_to_good_status_without_value();
 	}
 
-	std::future<bool> NeuralNetworkModel::setup_async(
+	void NeuralNetworkModel::setup_async(
 		const std::function<void(const bool& result)>& callback
 	)
 	{
@@ -262,7 +262,7 @@ namespace QLogicaeAiseCore
 		result.set_to_good_status_without_value();
 	}
 
-	std::future<bool> NeuralNetworkModel::setup_async(
+	void NeuralNetworkModel::setup_async(
 		const std::function<void(const bool& result)>& callback,
 		const std::string model_path
 	)
@@ -375,7 +375,7 @@ namespace QLogicaeAiseCore
 		result.set_to_good_status_without_value();
 	}
 
-	std::future<bool> NeuralNetworkModel::terminate_async(
+	void NeuralNetworkModel::terminate_async(
 		const std::function<void(const bool& result)>& callback
 	)
 	{
@@ -440,6 +440,8 @@ namespace QLogicaeAiseCore
 		const std::string& input
 	)
 	{
+		std::lock_guard<std::mutex> lock(_mutex);
+
 		_boc_collection =
 			ENCODING_MANAGER.from_string_to_boc(
 				input

@@ -2,10 +2,13 @@ import os
 import csv
 import json
 import uuid
+import time
 import shutil
 import random
 import base64
 import secrets
+from datetime import datetime
+
 
 from . import datasets
 from . import utilities
@@ -88,23 +91,52 @@ def generate_negative_sample():
         return template.format(*([random_identifier_value] + [token]*(template_count-1))), 0
 
 
-def generate_split(num_samples, pos_ratio):
-    rows = []
-    for _ in range(num_samples):
-        if random.random() < pos_ratio:
-            rows.append(generate_positive_sample())
+def generate_split():
+    training_rows = []
+    testing_rows = []
 
+    seen = set()
+
+    target_total = utilities.NUMBER_OF_SAMPLES
+    target_train = int(target_total * utilities.TRAINING_TESTING_RATIO)
+    target_test = target_total - target_train
+
+    while len(training_rows) < target_train or len(testing_rows) < target_test:
+        if random.random() < utilities.TRAINING_POSITION_RATIO:
+            text, label = generate_positive_sample()
         else:
-            rows.append(generate_negative_sample())
+            text, label = generate_negative_sample()
 
-    return rows
+        if text in seen:
+            continue
+
+        seen.add(text)
+
+        split_key = hash(text) & 0xFFFFFFFF
+
+        if split_key % 10 < int(utilities.TRAINING_TESTING_RATIO * 10):
+            if len(training_rows) < target_train:
+                training_rows.append((text, label))
+        else:
+            if len(testing_rows) < target_test:
+                testing_rows.append((text, label))
+
+    return training_rows, testing_rows
 
     
 def execute():
-    print("> Preparing Dataset - Starts")
+    print("> Preparing Dataset - Starts")    
+    timestamp_start = time.time_ns()
+
 
     if not utilities.IS_PREPARING_DATASET_ENABLED:
+        timestamp_end = time.time_ns()
         print("> Preparing Dataset - Disabled. Skipping Operation")
+        print('')
+        print('Report')
+        print(f"- Duration: {utilities.get_nanosecond_duration(timestamp_start, timestamp_end)} Seconds")
+        print(f"- Timestamp Start: {utilities.get_timestamp_string(timestamp_start)}")
+        print(f"- Timestamp End: {utilities.get_timestamp_string(timestamp_end)}")
         print("")
         return
 
@@ -113,11 +145,7 @@ def execute():
     utilities.prepare_folder_recursively(utilities.RELATIVE_ROOT_ENCODINGS_PATH)
     utilities.log_to_console(f"> Preparing Dataset - Clearing '{utilities.RELATIVE_ROOT_DATASET_FOLDER_PATH}' folder path - Complete")
 
-    train_count = int(utilities.NUMBER_OF_SAMPLES * utilities.TRAINING_TESTING_RATIO)
-    test_count = utilities.NUMBER_OF_SAMPLES - train_count
-
-    train_rows = generate_split(train_count, utilities.TRAINING_POSITION_RATIO)
-    test_rows = generate_split(test_count, utilities.TESTING_POSITION_RATIO)        
+    train_rows, test_rows = generate_split()
 
     utilities.log_to_console("> Preparing Dataset - File Output - Starts")
     utilities.write_csv(train_rows, utilities.FULL_TRAINING_FILE_PATH)
@@ -155,8 +183,12 @@ def execute():
     testing_positive_label_ratio_percentage = testing_positive_label_ratio * 100
     testing_negative_label_ratio_percentage = testing_negative_label_ratio * 100
 
+    timestamp_end = time.time_ns()
     print("")
-    print("Summary:")
+    print("Report:")
+    print(f"- Duration: {utilities.get_nanosecond_duration(timestamp_start, timestamp_end)} Seconds")
+    print(f"- Timestamp Start: {utilities.get_timestamp_string(timestamp_start)}")
+    print(f"- Timestamp End: {utilities.get_timestamp_string(timestamp_end)}")
     print(f"- Total Samples: {utilities.NUMBER_OF_SAMPLES}")
     print("")
     print("Training:")

@@ -7,19 +7,22 @@ import random
 import argparse
 import numpy as np
 from pathlib import Path
+from datetime import datetime
 import matplotlib.pyplot as plt
 from collections import OrderedDict
 
 
-IS_PRODUCTION_ENABLED = True
-IS_VERBOSE_LOGGING_ENABLED = False
+IS_PRODUCTION_ENABLED = False
+
 IS_PREPARING_DATASET_ENABLED = True
 IS_TRAINING_MODEL_ENABLED = True
 IS_TESTING_MODEL_ENABLED = True
+
+IS_VERBOSE_LOGGING_ENABLED = False
 IS_TESTING_MODEL_OUTPUT_VERBOSE_ENABLED = False
 
 
-NUMBER_OF_SAMPLES = 1000000 if IS_PRODUCTION_ENABLED else 100000
+NUMBER_OF_SAMPLES = 1_000_000 if IS_PRODUCTION_ENABLED else 100_000
 MAXIMUM_TRAINING_EPOCH = 20 if IS_PRODUCTION_ENABLED else 20
 TRAINING_TESTING_RATIO = 0.7 if IS_PRODUCTION_ENABLED else 0.7
 TRAINING_POSITION_RATIO = 0.4 if IS_PRODUCTION_ENABLED else 0.4
@@ -43,6 +46,9 @@ torch.manual_seed(MODEL_TRAINING_SEED)
 
 TRAINING_CSV_OUTPUT_HEADERS = ['epoch', 'training_loss', 'training_accuracy', 'value_loss', 'value_accuracy', 'learning_rate']
 ENCODING_TYPE = 'utf-8'
+
+TEXT_PROPERTY = 'file_line'
+PREDICTION_PROPERTY = 'prediction_label'
 
 RELATIVE_QLOGICAE_DOT_QLOGICAE_AI_FOLDER_PATH = 'qlogicae/.qlogicae/application'
 
@@ -160,7 +166,7 @@ def clear_all_console_outputs():
 def write_csv(rows, filename):
     with open(filename, 'w', newline='\n', encoding=ENCODING_TYPE) as f:
         writer = csv.writer(f)
-        writer.writerow(['file_content','label'])
+        writer.writerow([TEXT_PROPERTY, PREDICTION_PROPERTY])
         for c,l in rows:
             writer.writerow([c,l])
 
@@ -178,4 +184,12 @@ def prepare_folder_recursively(path):
                 print(f'Failed to delete {file_path}. Reason: {e}')
     else:
         os.makedirs(path)  
+
+
+def get_nanosecond_duration(timestamp_start, timestamp_end):
+    return (timestamp_end - timestamp_start) / 1_000_000_000
+
+
+def get_timestamp_string(timestamp):
+    return datetime.fromtimestamp(timestamp / 1_000_000_000).isoformat()
 

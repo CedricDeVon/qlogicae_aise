@@ -115,7 +115,7 @@
       <PreprocessorDefinitions>NOMINMAX;WIN32_LEAN_AND_MEAN;HASH_LEN=32;PCRE2_CODE_UNIT_WIDTH=8;SALT_LEN=crypto_pwhash_SALTBYTES;_WIN32_WINNT=0x0A00;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
-      <DebugInformationFormat>None</DebugInformationFormat>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
@@ -134,7 +134,7 @@
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
     </ClCompile>
     <Link>
-      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -160,10 +160,18 @@
     <ClCompile Include="qlogicae_aise_core_test\sources\all.cpp" />
     <ClCompile Include="qlogicae_aise_core_test\sources\application.cpp" />
     <ClCompile Include="qlogicae_aise_core_test\sources\assembly.cpp" />
+    <ClCompile Include="qlogicae_aise_core_test\sources\encoding_manager.cpp" />
+    <ClCompile Include="qlogicae_aise_core_test\sources\neural_network_model.cpp" />
     <ClCompile Include="qlogicae_aise_core_test\sources\utilities.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <CopyFileToFolders Include="model.onnx">
+      <FileType>Document</FileType>
+    </CopyFileToFolders>
     <None Include="packages.config" />
+    <CopyFileToFolders Include="vocabulary.json">
+      <FileType>Document</FileType>
+    </CopyFileToFolders>
   </ItemGroup>
   <ItemGroup>
     <MASM Include="qlogicae_aise_core_test\assembly\x64_masm__main.asm" />

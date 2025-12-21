@@ -1,8 +1,10 @@
-import json
 import csv
+import json
+import time
 import numpy as np
 from tqdm import tqdm
 import onnxruntime as ort
+from datetime import datetime
 
 from . import utilities
 
@@ -65,9 +67,16 @@ class PasswordExposureONNX:
 
 def execute():    
     print("> Testing Model - Starts")
+    timestamp_start = time.time_ns()
 
     if not utilities.IS_TESTING_MODEL_ENABLED:
+        timestamp_end = time.time_ns()
         print("> Testing Model - Disabled. Skipping Operation")
+        print('')
+        print('Report')
+        print(f"- Duration: {utilities.get_nanosecond_duration(timestamp_start, timestamp_end)} Seconds")
+        print(f"- Timestamp Start: {utilities.get_timestamp_string(timestamp_start)}")
+        print(f"- Timestamp End: {utilities.get_timestamp_string(timestamp_end)}")
         print("")
         return
 
@@ -83,8 +92,8 @@ def execute():
     with open(utilities.FULL_TESTING_FILE_PATH, "r", encoding=utilities.ENCODING_TYPE) as file:
         reader = csv.DictReader(file)
         for row in reader:
-            examples.append(row["file_content"])
-            true_labels.append(int(row["label"]))
+            examples.append(row[utilities.TEXT_PROPERTY])
+            true_labels.append(int(row[utilities.PREDICTION_PROPERTY]))
 
     labels, probabilities = model.predict_labels(examples)
 
@@ -117,11 +126,17 @@ def execute():
     wrong_sample_predictions_percentage = wrong_sample_predictions / total_samples * 100
     prediction_accuracy_percentage = prediction_accuracy * 100
 
-    print(f"Total Samples: {total_samples}")
-    print(f"Correct Sample Predictions: {correct_sample_predictions} / {total_samples} | {correct_sample_predictions_percentage}%")
-    print(f"Wrong Sample Predictions: {wrong_sample_predictions} / {total_samples} | {wrong_sample_predictions_percentage}%")
-    print(f"Prediction Accuracy: {prediction_accuracy} | {prediction_accuracy_percentage}%")
+    timestamp_end = time.time_ns() # 
+    print('> Testing Model - Complete')
+    print('')
+    print('Report')
+    print(f"- Duration: {utilities.get_nanosecond_duration(timestamp_start, timestamp_end)} Seconds")
+    print(f"- Timestamp Start: {utilities.get_timestamp_string(timestamp_start)}")
+    print(f"- Timestamp End: {utilities.get_timestamp_string(timestamp_end)}")
+    print(f"- Total Samples: {total_samples}")
+    print(f"- Correct Sample Predictions: {correct_sample_predictions} / {total_samples} | {correct_sample_predictions_percentage}%")
+    print(f"- Wrong Sample Predictions: {wrong_sample_predictions} / {total_samples} | {wrong_sample_predictions_percentage}%")
+    print(f"- Prediction Accuracy: {prediction_accuracy} | {prediction_accuracy_percentage}%")
     print("")
-    print("> Testing Model - Complete")
     print("\n")
 

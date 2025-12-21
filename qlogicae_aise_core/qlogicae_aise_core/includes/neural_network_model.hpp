@@ -19,7 +19,7 @@ namespace QLogicaeAiseCore
             QLogicaeCore::Result<void>& result
         );
 
-        std::future<bool> setup_async(
+        void setup_async(
             const std::function<void(const bool& result)>& callback
         );
 
@@ -45,7 +45,7 @@ namespace QLogicaeAiseCore
             const std::string model_path
         );
 
-        std::future<bool> setup_async(
+        void setup_async(
             const std::function<void(const bool& result)>& callback,
             const std::string model_path
         );
@@ -67,7 +67,7 @@ namespace QLogicaeAiseCore
             QLogicaeCore::Result<void>& result
         );
 
-        std::future<bool> terminate_async(
+        void terminate_async(
             const std::function<void(const bool& result)>& callback
         );
 
@@ -110,6 +110,8 @@ namespace QLogicaeAiseCore
         NeuralNetworkModel& operator = (
             const NeuralNetworkModel& instance
         ) = delete;
+
+        std::mutex _mutex;
 
         Ort::AllocatorWithDefaultOptions _ort_allocator;
 

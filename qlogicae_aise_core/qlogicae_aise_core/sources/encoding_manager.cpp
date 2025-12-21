@@ -93,7 +93,7 @@ namespace QLogicaeAiseCore
 		result.set_to_good_status_without_value();
 	}
 
-	std::future<bool> EncodingManager::setup_async(
+	void EncodingManager::setup_async(
 		const std::function<void(const bool& result)>& callback
 	)
 	{
@@ -269,6 +269,8 @@ namespace QLogicaeAiseCore
 		const std::size_t& vocabulary_size
 	)
 	{
+		std::lock_guard<std::mutex> lock(_mutex);
+
 		std::ifstream file_output(vocabulary_file_path.data());
 		if (!file_output.is_open())
 		{
