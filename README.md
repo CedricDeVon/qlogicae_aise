@@ -11,35 +11,17 @@
 
 <div style="text-align: center;">
   <h1>Aise</h1>
-  <p style="font-style: italic;">AI-Based Secrets Evaluator</p>
+  <p style="font-style: italic;">No 'PASS' left behind - literally</p>
 <div style="margin: 32px 64px;">
     
 ![Version](https://img.shields.io/badge/Version-1.0.0-blue)
-![GTest](https://img.shields.io/badge/GTest-NA-green)
+![GTest](https://img.shields.io/badge/GTest-99.95%-green)
 ![Windows](https://img.shields.io/badge/OS-Windows-blue)
 ![MIT](https://img.shields.io/badge/License-MIT-red)
 
 ![x64](https://img.shields.io/badge/Architecture-x64-yellow)
 ![C](https://img.shields.io/badge/Language-C17-white)
 ![C++](https://img.shields.io/badge/Language-C++20-white)
-
-<!--
-![iOS](https://img.shields.io/badge/OS-IOS-white)
-![Linux](https://img.shields.io/badge/OS-Linux-yellow)
-
-![x86](https://img.shields.io/badge/Architecture-x86-yellow)
-![x64 MASM](https://img.shields.io/badge/Language-MASM-white)
-![x86 MASM](https://img.shields.io/badge/Language-MASM-white)
-
-[![Gmail](https://img.shields.io/badge/Gmail-Visit-red)](sample@gmail.com)
-[![GitHub](https://img.shields.io/badge/GitHub-Visit-white?logo=github)](https://github.com/sample)
-[![Facebook](https://img.shields.io/badge/Facebook-Visit-blue?logo=facebook)](https://facebook.com/sample)
-[![Twitter](https://img.shields.io/badge/Twitter-Visit-black?logo=x)](https://twitter.com/sample)
-[![Discord](https://img.shields.io/badge/Discord-Visit-indigo?logo=discord)](https://discord.gg/sample)
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-Visit-blue)](https://linkedin.com/in/sample)
-[![Slack](https://img.shields.io/badge/Slack-Visit-green?logo=slack)](https://sample.slack.com)
-[![Website](https://img.shields.io/badge/Website-Visit-white)](https://sample.com)
--->
 
   </div>
 </div>
@@ -78,19 +60,56 @@
   🧾 Description
 </h3>
 <p>
-  [Overview description. Describe its main purpose, motivation for development, target audience, etc.]
+  Project Aise (pronounced as 'Ice') is a console-based software development tool that aims to mitigate one of the most disastrous software engineering mistakes in the field – mishandled hardcoded secrets. Early-detection can be utilized, before developers enter 'git push', and make a costly mistake.
+</p>
+<p>
+  Usage is relatively simple: enter the ‘aise evaluate’ command inside your C++20 project root folder, and a console and file output report will be generated for your analysis.
 </p>
 <h3 id="about-core-features">
   ⚙️ Core Features
 </h3>
-<ul>
+<p>
+  Software applications are nothing without providing valuable utility. For a relatively simple console project, here is a list of what it can offer the most: 
+</p>
+<ol>
   <li>
-    <h3>[Feature name]</h3>
+    <h3>Hardcoded Secret Prediction</h3>
     <ul>
-      <li><p>[Feature overview description]</p></li>
+      <li>
+        <p>
+          Aise handles its predictions line-by-line, file-by-file, within a given target folder, recursively. It also possesses a wide-range of options such as:
+        </p>
+        <ol>
+          <li>
+            <p>
+              File-extension specific parsing
+            </p>
+          </li>
+          <li>
+            <p>
+              Modifiable minimum and maximum positive prediction range
+            </p>
+          </li>
+          <li>
+            <p>
+              And much more and more to come!
+            </p>
+          </li>
+        </ol>
+      </li>
     </ul>
   </li>
-</ul>
+  <li>
+    <h3>Evaluation Result Output</h3>
+    <ul>
+      <li>
+        <p>
+          Console outputs alone may not be sufficient, or, due to hardware limitations, may not be able to display the results on-screen. As a precautionary measure, a file output mechanism has been implemented.
+        </p>
+      </li>
+    </ul>
+  </li>    
+</ol>
 
 </br>
 
@@ -103,32 +122,38 @@
   📋 Pre-requisites
 </h3>
 <p>
-  [Describe Operating Systems, System Architecture, Runtime, Programming Language Version, Package Manager, Compiler, Build Tools, Database Systems, Environment Tools, Package Dependencies, Network Access, RAM, Permissions]
+  To avoid technical issues, please assess your system if it meets or exceeds the following requirements:
 </p>
-<h3 id="getting-started-releases">
-  🏷️ Releases
-</h3>
-<p>
-  [Include Binaries, Sources, etc.]
-</p>
-<h3 id="getting-started-installation">
-  📥 Installation
-</h3>
-<p>
-  [Description]
-</p>
-<h3 id="getting-started-setup">
-  🛠️ Setup
-</h3>
-<p>
-  [Description]
-</p>
-<h3 id="getting-started-usage-examples">
-  💡 Usage Examples
-</h3>
-<p>
-  [Description]
-</p>
+<h4>
+  PC Specifications
+</h4> 
+<ul>
+  <li>
+    <p>
+      Operating System – Windows 11
+    </p>
+  </li>
+  <li>
+    <p>
+      RAM - At least 1 GB
+    </p>
+  </li>
+  <li>
+    <p>
+      Storage - At least 35 MB
+    </p>
+  </li>
+</ul>
+<h4>
+  Installed Applications
+</h4> 
+<ul>
+  <li>
+    <p>
+      CLI Shell Applications (Command Prompt, PowerShell, etc.)
+    </p>
+  </li>
+</ul>
 
 </br>
 
